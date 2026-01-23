@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../providers/providers.dart';
-import '../../screens/screens.dart';
-import '../../widgets/widgets.dart';
+import 'package:cinemapedia/presentation/providers/providers.dart';
+import 'package:cinemapedia/presentation/widgets/widgets.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -12,10 +11,12 @@ class HomeView extends ConsumerStatefulWidget {
   HomeViewState createState() => HomeViewState();
 }
 
-class HomeViewState extends ConsumerState<HomeView> {
+class HomeViewState extends ConsumerState<HomeView>
+    with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
+
     ref.read(nowPlayingMoviesProviders.notifier).loadNextPage();
     ref.read(popularMoviesProviders.notifier).loadNextPage();
     ref.read(topRatedMoviesProvider.notifier).loadNextPage();
@@ -24,14 +25,15 @@ class HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final initialLoading = ref.watch(initialLoadingProvider);
     if (initialLoading) return const FullScreenLoader();
 
     final slideShowMovies = ref.watch(moviesSlideshowProvider);
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProviders);
-    final popularMovies = ref.watch(popularMoviesProviders);
-    final upcomingMovies = ref.watch(upcomingMoviesProvider);
     final topRatedMovies = ref.watch(topRatedMoviesProvider);
+    final upcomingMovies = ref.watch(upcomingMoviesProvider);
 
     return CustomScrollView(
       slivers: [
@@ -43,47 +45,46 @@ class HomeViewState extends ConsumerState<HomeView> {
             centerTitle: false,
           ),
         ),
+
         SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             return Column(
               children: [
-                // const CustomAppBar(),
+                // const CustomAppbar(),
                 MoviesSlideshow(movies: slideShowMovies),
-                MoviesHorizontalListview(
+
+                MovieHorizontalListview(
                   movies: nowPlayingMovies,
                   title: 'En cines',
                   subTitle: 'Lunes 20',
-                  loadNextPage: () {
-                    ref.read(nowPlayingMoviesProviders.notifier).loadNextPage();
-                  },
+                  loadNextPage: () => ref
+                      .read(nowPlayingMoviesProviders.notifier)
+                      .loadNextPage(),
                 ),
 
-                MoviesHorizontalListview(
+                MovieHorizontalListview(
                   movies: upcomingMovies,
                   title: 'Próximamente',
                   subTitle: 'En este mes',
-                  loadNextPage: () {
-                    ref.read(upcomingMoviesProvider.notifier).loadNextPage();
-                  },
+                  loadNextPage: () =>
+                      ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
                 ),
 
-                MoviesHorizontalListview(
-                  movies: popularMovies,
-                  title: 'Populares',
-                  // subTitle: 'En este mes',
-                  loadNextPage: () {
-                    ref.read(popularMoviesProviders.notifier).loadNextPage();
-                  },
-                ),
-
-                MoviesHorizontalListview(
+                // Ya no estará aquí, ahora es parte del menú inferior
+                // MovieHorizontalListview(
+                //   movies: popularMovies,
+                //   title: 'Populares',
+                //   // subTitle: '',
+                //   loadNextPage: () =>ref.read(popularMoviesProvider.notifier).loadNextPage()
+                // ),
+                MovieHorizontalListview(
                   movies: topRatedMovies,
                   title: 'Mejor calificadas',
                   subTitle: 'Desde siempre',
-                  loadNextPage: () {
-                    ref.read(topRatedMoviesProvider.notifier).loadNextPage();
-                  },
+                  loadNextPage: () =>
+                      ref.read(topRatedMoviesProvider.notifier).loadNextPage(),
                 ),
+
                 const SizedBox(height: 10),
               ],
             );
@@ -92,4 +93,7 @@ class HomeViewState extends ConsumerState<HomeView> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
