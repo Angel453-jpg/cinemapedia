@@ -1,31 +1,32 @@
-import 'package:cinemapedia/domain/entities/movie.dart';
-import 'package:cinemapedia/presentation/widgets/movies/movie_poster_link.dart';
 import 'package:flutter/material.dart';
+import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-class MoviesMasonry extends StatefulWidget {
-  final List<Movie> movies;
-  final Future<List<Movie>> Function()? loadNextPage;
+import 'movie_poster_link.dart';
 
-  const MoviesMasonry({super.key, required this.movies, this.loadNextPage});
+class MovieMasonry extends StatefulWidget {
+  final List<Movie> movies;
+  final VoidCallback? loadNextPage;
+
+  const MovieMasonry({super.key, required this.movies, this.loadNextPage});
 
   @override
-  State<MoviesMasonry> createState() => _MoviesMasonryState();
+  State<MovieMasonry> createState() => _MovieMasonryState();
 }
 
-class _MoviesMasonryState extends State<MoviesMasonry> {
-  bool isLastPage = false;
-  bool isLoading = false;
+class _MovieMasonryState extends State<MovieMasonry> {
   final scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+
     scrollController.addListener(() {
-      //Si el scroll está al final o cerca de unos 200px, aquí llamar el loadNextPage
-      if (scrollController.position.pixels + 200 >=
+      if (widget.loadNextPage == null) return;
+
+      if ((scrollController.position.pixels + 100) >=
           scrollController.position.maxScrollExtent) {
-        loadNextPageMovies();
+        widget.loadNextPage!();
       }
     });
   }
@@ -34,19 +35,6 @@ class _MoviesMasonryState extends State<MoviesMasonry> {
   void dispose() {
     scrollController.dispose();
     super.dispose();
-  }
-
-  void loadNextPageMovies() async {
-    if (isLoading || isLastPage) return;
-    if (widget.loadNextPage == null) return;
-
-    isLoading = true;
-    final movies = await widget.loadNextPage!();
-    isLoading = false;
-
-    if (movies.isEmpty) {
-      isLastPage = true;
-    }
   }
 
   @override
@@ -63,11 +51,12 @@ class _MoviesMasonryState extends State<MoviesMasonry> {
           if (index == 1) {
             return Column(
               children: [
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 MoviePosterLink(movie: widget.movies[index]),
               ],
             );
           }
+
           return MoviePosterLink(movie: widget.movies[index]);
         },
       ),

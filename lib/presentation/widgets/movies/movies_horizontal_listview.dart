@@ -1,16 +1,16 @@
-import 'package:animate_do/animate_do.dart';
-import 'package:cinemapedia/config/helpers/human_formats.dart';
-import 'package:cinemapedia/domain/entities/movie.dart';
+import 'package:cinemapedia/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:go_router/go_router.dart';
 
-class MoviesHorizontalListview extends StatefulWidget {
+class MovieHorizontalListview extends StatefulWidget {
   final List<Movie> movies;
   final String? title;
   final String? subTitle;
   final VoidCallback? loadNextPage;
 
-  const MoviesHorizontalListview({
+  const MovieHorizontalListview({
     super.key,
     required this.movies,
     this.title,
@@ -19,16 +19,17 @@ class MoviesHorizontalListview extends StatefulWidget {
   });
 
   @override
-  State<MoviesHorizontalListview> createState() =>
-      _MoviesHorizontalListviewState();
+  State<MovieHorizontalListview> createState() =>
+      _MovieHorizontalListviewState();
 }
 
-class _MoviesHorizontalListviewState extends State<MoviesHorizontalListview> {
+class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
   final scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+
     scrollController.addListener(() {
       if (widget.loadNextPage == null) return;
 
@@ -53,6 +54,7 @@ class _MoviesHorizontalListviewState extends State<MoviesHorizontalListview> {
         children: [
           if (widget.title != null || widget.subTitle != null)
             _Title(title: widget.title, subTitle: widget.subTitle),
+
           Expanded(
             child: ListView.builder(
               controller: scrollController,
@@ -77,7 +79,7 @@ class _Slide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme;
+    final textStyles = Theme.of(context).textTheme;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -88,59 +90,31 @@ class _Slide extends StatelessWidget {
           SizedBox(
             width: 150,
             child: ClipRRect(
-              borderRadius: BorderRadiusGeometry.circular(20),
-              child: Image.network(
-                fit: BoxFit.cover,
-                movie.posterPath,
-                width: 150,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress != null) {
-                    return const Padding(
-                      padding: EdgeInsetsGeometry.all(8.0),
-                      child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  }
-                  return GestureDetector(
-                    onTap: () => context.push('/home/0/movie/${movie.id}'),
-                    child: FadeIn(child: child),
-                  );
-                },
+              borderRadius: BorderRadius.circular(20),
+              child: GestureDetector(
+                onTap: () => context.push('/home/0/movie/${movie.id}'),
+                child: FadeInImage(
+                  height: 220,
+                  fit: BoxFit.cover,
+                  placeholder: const AssetImage(
+                    'assets/loaders/bottle-loader.gif',
+                  ),
+                  image: NetworkImage(movie.posterPath),
+                ),
               ),
             ),
           ),
 
           const SizedBox(height: 5),
+
           //* Title
           SizedBox(
             width: 150,
-            child: Text(movie.title, maxLines: 2, style: textStyle.titleSmall),
+            child: Text(movie.title, maxLines: 2, style: textStyles.titleSmall),
           ),
 
           //* Rating
-          SizedBox(
-            width: 150,
-            child: Row(
-              children: [
-                Icon(Icons.star_half_outlined, color: Colors.yellow.shade800),
-                const SizedBox(width: 3),
-                Text(
-                  movie.voteAverage.toStringAsFixed(1),
-                  style: textStyle.bodyMedium?.copyWith(
-                    color: Colors.yellow.shade800,
-                  ),
-                ),
-                // const SizedBox(width: 10),
-                const Spacer(),
-                Text(
-                  HumanFormats.number(movie.popularity),
-                  style: textStyle.bodySmall,
-                ),
-                // Text('${movie.popularity}', style: textStyle.bodySmall,)
-              ],
-            ),
-          ),
+          MovieRating(voteAverage: movie.voteAverage),
         ],
       ),
     );
@@ -159,11 +133,13 @@ class _Title extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.only(top: 10),
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       child: Row(
         children: [
           if (title != null) Text(title!, style: titleStyle),
+
           const Spacer(),
+
           if (subTitle != null)
             FilledButton.tonal(
               style: const ButtonStyle(visualDensity: VisualDensity.compact),

@@ -8,7 +8,7 @@ class FullScreenLoader extends StatelessWidget {
       'Cargando películas',
       'Comprando palomitas de maíz',
       'Cargando populares',
-      'LLamando a mi novia',
+      'Llamando a mi novia',
       'Ya mero...',
       'Esto esta tardando demasiado :(',
     ];
